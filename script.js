@@ -3,6 +3,7 @@ let allQuizData = []; // 로드된 모든 퀴즈
 let currentQuizSet = []; // 현재 풀고 있는 퀴즈 세트
 let lastQuizSet_unshuffled = []; // [기능 1] 최근 퀴즈 목록 (섞기 전 원본)
 let currentQuestionIndex = 0; // 현재 문제 번호
+let activePresetSlot = null; // [기능 2 개선] 현재 선택된 프리셋 슬롯 번호
 
 const screens = document.querySelectorAll('.screen');
 const startScreen = document.getElementById('start-screen');
@@ -83,7 +84,7 @@ function setupSelectionScreen() {
         item.appendChild(checkbox);
         item.appendChild(label);
         label.addEventListener('click', (e) => {
-            e.preventDefault(); // 라벨 클릭 시 기본 동작(텍스트 선택 등) 방지
+            e.preventDefault(); 
             checkbox.checked = !checkbox.checked;
             updateCustomButton();
         });
@@ -102,18 +103,41 @@ function setupSelectionScreen() {
         }
         
         currentQuizSet = allQuizData.filter(quiz => selectedIds.includes(quiz.id));
-        startQuiz('custom'); // 'custom' 모드로 퀴즈 시작
+        startQuiz('custom'); 
     });
     
     // '뒤로가기' 버튼
     document.getElementById('btn-back-to-menu-select').addEventListener('click', () => showScreen(startScreen));
 
-    // [기능 2] 프리셋 버튼 이벤트 리스너 설정
-    document.querySelectorAll('.btn-preset.load').forEach(btn => {
-        btn.addEventListener('click', () => loadPreset(btn.dataset.slot));
+    // [기능 2 개선] 프리셋 UI 로직
+    const slotButtons = document.querySelectorAll('.btn-slot');
+    slotButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // 다른 버튼의 active 클래스 제거
+            slotButtons.forEach(s => s.classList.remove('active'));
+            // 현재 버튼에 active 클래스 추가
+            btn.classList.add('active');
+            // 활성 슬롯 번호 저장
+            activePresetSlot = btn.dataset.slot;
+        });
     });
-    document.querySelectorAll('.btn-preset.save').forEach(btn => {
-        btn.addEventListener('click', () => savePreset(btn.dataset.slot));
+
+    // '불러오기' 버튼
+    document.getElementById('btn-preset-load').addEventListener('click', () => {
+        if (!activePresetSlot) {
+            alert("먼저 불러올 슬롯('문제 1' ~ '문제 4')을 선택하세요.");
+            return;
+        }
+        loadPreset(activePresetSlot);
+    });
+
+    // '저장하기' 버튼
+    document.getElementById('btn-preset-save').addEventListener('click', () => {
+        if (!activePresetSlot) {
+            alert("먼저 저장할 슬롯('문제 1' ~ '문제 4')을 선택하세요.");
+            return;
+        }
+        savePreset(activePresetSlot);
     });
 }
 
@@ -141,19 +165,15 @@ function shuffleArray(array) {
 function startQuiz(mode) {
     currentQuestionIndex = 0;
     
-    // 'custom' 모드는 currentQuizSet이 이미 '선택 완료' 버튼에서 설정됨
     if (mode === 'all') {
         currentQuizSet = [...allQuizData];
     } else if (mode === '기술' || mode === '규정') {
         currentQuizSet = allQuizData.filter(q => q.category === mode);
     }
     
-    // [기능 1] '최근 문제'용으로 현재 퀴즈 목록(섞기 전)을 저장
     lastQuizSet_unshuffled = [...currentQuizSet];
-    // '최근 문제' 버튼 텍스트 업데이트
     document.querySelector('.btn-menu[data-mode="recent"]').textContent = `5. 최근 문제 바로 시작 (${lastQuizSet_unshuffled.length}개)`;
 
-    // 퀴즈 순서 섞기
     shuffleArray(currentQuizSet);
 
     displayQuestion();
@@ -169,11 +189,9 @@ function startRecentQuiz() {
         return;
     }
     
-    // '최근 문제' 목록을 현재 퀴즈 세트로 복사
     currentQuizSet = [...lastQuizSet_unshuffled];
     currentQuestionIndex = 0;
     
-    // 퀴즈 순서 다시 섞기 (새로운 순서로)
     shuffleArray(currentQuizSet);
     
     displayQuestion();
@@ -185,7 +203,7 @@ function startRecentQuiz() {
  * 현재 인덱스의 퀴즈를 화면에 표시합니다.
  */
 function displayQuestion() {
-    quizCard.classList.remove('is-flipped'); // 카드 앞면으로
+    quizCard.classList.remove('is-flipped'); 
     const quiz = currentQuizSet[currentQuestionIndex];
     
     questionText.textContent = quiz.question;
@@ -200,7 +218,6 @@ function showNextQuestion() {
     currentQuestionIndex++;
     
     if (currentQuestionIndex >= currentQuizSet.length) {
-        // 모든 문제를 다 풀었으면, 다시 섞고 0번으로
         shuffleArray(currentQuizSet);
         currentQuestionIndex = 0;
     }
@@ -226,11 +243,14 @@ document.getElementById('btn-next').addEventListener('click', showNextQuestion);
 
 document.getElementById('btn-back-to-menu-quiz').addEventListener('click', () => {
     showScreen(startScreen);
+    // 선택 화면 상태 초기화
     selectionList.querySelectorAll('input:checked').forEach(input => input.checked = false);
     updateCustomButton();
+    document.querySelectorAll('.btn-slot').forEach(s => s.classList.remove('active'));
+    activePresetSlot = null;
 });
 
-// --- 4. [기능 2] 프리셋 저장/불러오기 ---
+// --- 4. [기능 2] 프리셋 저장/불러오기 (함수 내용은 변경 없음) ---
 
 /**
  * 선택한 프리셋(슬롯)을 불러와 체크박스에 적용합니다.
@@ -259,7 +279,7 @@ function loadPreset(slot) {
         }
     });
 
-    alert(`'문제 ${slot}' (${presetIds.length}개)을(를) 불러왔습니다.\n필요시 문제를 더 추가하거나 빼고 다른 슬롯에 저장할 수 있습니다.`);
+    alert(`'문제 ${slot}' (${presetIds.length}개)을(를) 불러왔습니다.`);
     updateCustomButton(); // 선택된 개수 업데이트
 }
 
