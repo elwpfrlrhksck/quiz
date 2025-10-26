@@ -250,7 +250,7 @@ document.getElementById('btn-back-to-menu-quiz').addEventListener('click', () =>
     activePresetSlot = null;
 });
 
-// --- 4. [기능 2] 프리셋 저장/불러오기 (함수 내용은 변경 없음) ---
+// --- 4. [기능 2] 프리셋 저장/불러오기 ---
 
 /**
  * 선택한 프리셋(슬롯)을 불러와 체크박스에 적용합니다.
