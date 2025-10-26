@@ -82,7 +82,7 @@ h1 {
 /* 2. 직접 선택 화면 */
 #selection-list {
     width: 100%;
-    max-height: 50vh; /* 프리셋 버튼 공간 확보를 위해 살짝 줄임 */
+    max-height: 50vh;
     overflow-y: auto;
     background: var(--card-color);
     border-radius: 10px;
@@ -111,60 +111,77 @@ h1 {
     line-height: 1.4;
 }
 
-/* [추가된 스타일] 프리셋 버튼 */
+/* [개선된 스타일] 프리셋 */
 .preset-container {
     width: 100%;
     margin: 10px 0;
-    padding: 10px;
+    padding: 15px;
     background-color: #f8f9fa;
     border-radius: 8px;
     box-sizing: border-box;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
 }
 .preset-container strong {
-    font-size: 0.9rem;
-    margin-right: 5px;
-    color: #555;
-    width: 100%; /* 모바일에서 "불러오기" 텍스트를 한 줄로 */
-    margin-bottom: 5px;
+    font-size: 1rem;
+    color: #333;
+    display: block;
+    margin-bottom: 12px;
+    text-align: center;
 }
-.btn-preset {
-    padding: 6px 12px;
-    font-size: 0.85rem;
+.preset-slots {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.btn-slot {
+    flex: 1; /* 4개 버튼이 1:1:1:1 비율 */
+    padding: 10px 5px;
+    font-size: 0.9rem;
+    font-weight: 500;
     border: 1px solid #ccc;
     border-radius: 5px;
     background-color: white;
     cursor: pointer;
     transition: all 0.2s;
-    flex-grow: 1; /* 버튼들이 공간을 적절히 나눠가짐 */
-    text-align: center;
 }
-.btn-preset:hover {
-    background-color: #e0e0e0;
-    border-color: #aaa;
+.btn-slot:hover {
+    background-color: #e9ecef;
 }
-.btn-preset.save {
-    background-color: #f0fff4;
-}
-.btn-preset.save:hover {
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-}
-.btn-preset.load {
-    background-color: #f0f8ff;
-}
-.btn-preset.load:hover {
-    background-color: #cce5ff;
-    border-color: #b8daff;
-}
-.preset-container.save {
-    margin-top: 15px;
-    margin-bottom: 0;
+/* 선택된 슬롯 스타일 */
+.btn-slot.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    font-weight: 700;
 }
 
+.preset-actions {
+    display: flex;
+    gap: 8px;
+}
+.btn-preset {
+    flex: 1; /* 2개 버튼이 1:1 비율 */
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-preset.action-load {
+    background-color: #e6f7ff;
+    color: #0056b3;
+}
+.btn-preset.action-load:hover {
+    background-color: #cce5ff;
+}
+.btn-preset.action-save {
+    background-color: #e6fff0;
+    color: #155724;
+}
+.btn-preset.action-save:hover {
+    background-color: #d4edda;
+}
 
 /* 3. 퀴즈 풀이 화면 */
 #quiz-header {
