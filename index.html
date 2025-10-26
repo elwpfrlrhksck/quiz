@@ -1,154 +1,67 @@
-/* 기본 설정 */
-:root {
-    --bg-color: #f0f2f5;
-    --card-color: #ffffff;
-    --text-color: #333;
-    --primary-color: #007bff;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    margin: 0;
-    padding: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>간단 퀴즈</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-/* 스크린 관리 */
-.screen {
-    width: 100%;
-    max-width: 600px;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-}
-.screen.active {
-    display: flex;
-}
+    <div id="start-screen" class="screen active">
+        <h1>퀴즈 범위 선택</h1>
+        <button class="btn-menu" data-mode="all">1. 전체 (0개)</button>
+        <button class="btn-menu" data-mode="기술">2. 기술 (0개)</button>
+        <button class="btn-menu" data-mode="규정">3. 규정 (0개)</button>
+        <button class="btn-menu" data-mode="select">4. 직접 선택</button>
+        <button class="btn-menu" data-mode="recent">5. 최근 문제 바로 시작 (0개)</button>
+    </div>
 
-h1 {
-    font-size: 1.8rem;
-    color: var(--primary-color);
-    margin-bottom: 30px;
-    text-align: center;
-}
+    <div id="selection-screen" class="screen">
+        <h1>문제 직접 선택</h1>
 
-/* 공통 버튼 스타일 */
-.btn-main, .btn-sub, .btn-menu {
-    width: 100%;
-    padding: 18px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-sizing: border-box;
-}
-.btn-main {
-    background-color: var(--primary-color);
-    color: white;
-    margin-top: 20px;
-}
-.btn-main:hover {
-    filter: brightness(1.1);
-}
-.btn-sub {
-    background-color: #e9ecef;
-    color: #495057;
-    margin-top: 10px;
-}
-.btn-sub:hover {
-    background-color: #dee2e6;
-}
-.btn-menu {
-    background-color: var(--card-color);
-    color: var(--text-color);
-    border: 1px solid #ddd;
-    margin-bottom: 12px;
-    text-align: left;
-}
-.btn-menu:hover {
-    background-color: #f8f9fa;
-    border-color: var(--primary-color);
-}
+        <div class="preset-container">
+            <strong>프리셋 저장 / 불러오기</strong>
+            <div class="preset-slots">
+                <button class="btn-slot" data-slot="1">문제 1</button>
+                <button class="btn-slot" data-slot="2">문제 2</button>
+                <button class="btn-slot" data-slot="3">문제 3</button>
+                <button class="btn-slot" data-slot="4">문제 4</button>
+            </div>
+            <div class="preset-actions">
+                <button id="btn-preset-load" class="btn-preset action-load">불러오기</button>
+                <button id="btn-preset-save" class="btn-preset action-save">저장하기</button>
+            </div>
+        </div>
 
-/* 2. 직접 선택 화면 */
-#selection-list {
-    width: 100%;
-    max-height: 50vh;
-    overflow-y: auto;
-    background: var(--card-color);
-    border-radius: 10px;
-    border: 1px solid #eee;
-    padding: 10px 0;
-}
-.selection-item {
-    display: flex;
-    align-items: center;
-    padding: 12px 20px;
-    border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
-    font-size: 0.95rem;
-}
-.selection-item:last-child {
-    border-bottom: none;
-}
-.selection-item input {
-    margin-right: 15px;
-    width: 20px;
-    height: 20px;
-}
-.selection-item label {
-    flex: 1;
-    cursor: pointer;
-    line-height: 1.4;
-}
+        <div id="selection-list">
+            </div>
+        
+        <button id="btn-start-custom" class="btn-main">선택 완료 (0개)</button>
+        <button id="btn-back-to-menu-select" class="btn-sub">뒤로가기</button>
+    </div>
 
-/* [개선된 스타일] 프리셋 */
-.preset-container {
-    width: 100%;
-    margin: 10px 0;
-    padding: 15px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    box-sizing: border-box;
-}
-.preset-container strong {
-    font-size: 1rem;
-    color: #333;
-    display: block;
-    margin-bottom: 12px;
-    text-align: center;
-}
-.preset-slots {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-.btn-slot {
-    flex: 1; /* 4개 버튼이 1:1:1:1 비율 */
-    padding: 10px 5px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: white;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-slot:hover {
-    background-color: #e9ecef;
-}
-/* 선택된 슬롯 스타일 */
-.btn-slot.active {
-    background-color: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-    font-weight
+    <div id="quiz-screen" class="screen">
+        <div id="quiz-header">
+            <span id="quiz-counter">1 / 10</span>
+        </div>
+        
+        <div id="quiz-card-container">
+            <div id="quiz-card">
+                <div class="card-face card-front">
+                    <p id="question-text">문제 로딩 중...</p>
+                </div>
+                <div class="card-face card-back">
+                    <p id="answer-text">답변 로딩 중...</p>
+                </div>
+            </div>
+        </div>
+        
+        <button id="btn-next" class="btn-main">다음 문제</button>
+        <button id="btn-back-to-menu-quiz" class="btn-sub">메뉴로</button>
+    </div>
+
+    <script src="parser.js"></script> 
+    <script src="script.js"></script>
+</body>
+</html>
