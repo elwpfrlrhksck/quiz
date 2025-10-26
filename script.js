@@ -113,6 +113,17 @@ function updateCustomButton() {
 // --- 2. 퀴즈 진행 ---
 
 /**
+ * 배열을 셔플합니다 (Fisher-Yates Shuffle).
+ * @param {Array<any>} array - 셔플할 배열
+ */
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+/**
  * 선택한 모드로 퀴즈를 시작합니다.
  */
 function startQuiz(mode) {
@@ -125,11 +136,8 @@ function startQuiz(mode) {
     }
     // 'custom' 모드는 currentQuizSet이 이미 설정되었으므로 별도 처리 안 함
 
-    // 퀴즈 순서 섞기 (Fisher-Yates Shuffle)
-    for (let i = currentQuizSet.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [currentQuizSet[i], currentQuizSet[j]] = [currentQuizSet[j], currentQuizSet[i]];
-    }
+    // 퀴즈 순서 섞기
+    shuffleArray(currentQuizSet);
 
     displayQuestion();
     showScreen(quizScreen);
@@ -154,10 +162,21 @@ function displayQuestion() {
  */
 function showNextQuestion() {
     currentQuestionIndex++;
-    // 마지막 문제에 도달하면 처음으로
+    
+    // ★★★★★ 변경된 부분 ★★★★★
+    // 마지막 문제에 도달하면
     if (currentQuestionIndex >= currentQuizSet.length) {
+        // 사용자에게 알림 (선택 사항)
+        // alert("모든 문제를 다 풀었습니다. 퀴즈를 다시 섞습니다!"); 
+        
+        // 1. 퀴즈를 다시 섞음
+        shuffleArray(currentQuizSet);
+        
+        // 2. 인덱스를 0으로 리셋
         currentQuestionIndex = 0;
     }
+    
+    // 다음 문제 (또는 섞인 후의 첫 문제) 표시
     displayQuestion();
 }
 
