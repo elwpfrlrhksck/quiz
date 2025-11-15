@@ -95,6 +95,9 @@ function setupSelectionScreen() {
         
         // 문제 항목 생성
         categoryQuizzes.forEach((quiz) => {
+            // 7번 문제 원본은 목록에 표시하지 않음 (대신 서브 퀴즈로 출제됨)
+            if (quiz.id === 'K-7') return; 
+            
             const item = document.createElement('div');
             item.className = 'selection-item';
             
@@ -108,13 +111,11 @@ function setupSelectionScreen() {
             const label = document.createElement('label');
             label.htmlFor = `q-${quiz.id}`;
             
-            // 질문 텍스트 정리 (input.txt의 경우 ID. 제거)
+            // 질문 텍스트 정리 (input.txt의 경우 ID. 표시)
             let questionDisplay = quiz.question;
             if (quiz.category !== '기출') {
-                // ID가 붙어있는 경우 제거 (parser에서 이미 처리된 경우 대비)
                 const idRegex = new RegExp(`^${quiz.id}\\. `);
                 questionDisplay = quiz.question.replace(idRegex, '');
-                // input.txt 문제의 경우 문제 번호 (1-1. 등) 표시
                 questionDisplay = `${quiz.id}. ${questionDisplay}`;
             }
 
@@ -153,6 +154,13 @@ function setupSelectionScreen() {
     btnStartCustom.addEventListener('click', () => {
         const selectedIds = Array.from(selectionCategoryList.querySelectorAll('input:checked'))
                                  .map(input => input.value);
+        
+        // 7번 퀴즈는 선택 목록에 없으므로, 전체 퀴즈 목록에서 직접 찾아서 추가해야 함.
+        const original7thQuiz = allQuizData.find(q => q.id === 'K-7');
+        if (original7thQuiz && original7thQuiz.subQuizzes && original7thQuiz.subQuizzes.length > 0) {
+            // 7번 퀴즈가 서브 퀴즈를 가지고 있다면, 서브 퀴즈를 포함하는 원본 퀴즈를 세트에 추가
+            selectedIds.push(original7thQuiz.id);
+        }
         
         if (selectedIds.length === 0) {
             alert("하나 이상의 문제를 선택하세요.");
@@ -212,7 +220,25 @@ function startQuiz(mode) {
 
     // 퀴즈 순서 섞기
     shuffleArray(currentQuizSet);
+    
+    // ★★★★★ 수정된 부분: K-7 퀴즈를 서브 퀴즈 5개로 대체 ★★★★★
+    
+    let tempQuizSet = [];
+    currentQuizSet.forEach((quiz) => {
+        if (quiz.id === 'K-7' && quiz.subQuizzes) {
+            // K-7 원본 퀴즈를 서브 퀴즈 5개로 대체
+            tempQuizSet = tempQuizSet.concat(quiz.subQuizzes);
+        } else {
+            tempQuizSet.push(quiz);
+        }
+    });
 
+    currentQuizSet = tempQuizSet;
+    // 7번 퀴즈를 제외한 나머지 퀴즈를 다시 섞음 (선택적으로)
+    // shuffleArray(currentQuizSet); 
+    // 이미 K-7만 서브퀴즈로 대체하고 나머지는 섞여있으므로 추가 셔플은 선택 사항입니다.
+    // -----------------------------------------------------------
+    
     displayQuestion();
     showScreen(quizScreen);
 }
@@ -222,20 +248,22 @@ function startQuiz(mode) {
  */
 function displayQuestion() {
     // ★★★★★ 수정된 부분: 다음 문제로 넘어가기 전 카드 플립 상태를 강제 초기화 (애니메이션 문제 해결) ★★★★★
-    // 0ms 딜레이를 주어 애니메이션 리셋을 확실하게 합니다.
+    
+    // 1. 애니메이션 끄기
     quizCard.style.transition = 'none'; 
     quizCard.classList.remove('is-flipped');
     
-    // 애니메이션 속성 복원 (다음 뒤집기 동작을 위해)
-    setTimeout(() => {
-        quizCard.style.transition = 'transform 0.6s';
-    }, 50); 
-    
+    // 2. 내용 업데이트
     const quiz = currentQuizSet[currentQuestionIndex];
     
     questionText.textContent = quiz.question;
     answerText.textContent = quiz.answer.length > 0 ? quiz.answer : "(답변 내용이 없습니다)";
     quizCounter.textContent = `${currentQuestionIndex + 1} / ${currentQuizSet.length}`;
+    
+    // 3. 애니메이션 속성 복원 (다음 뒤집기 동작을 위해)
+    setTimeout(() => {
+        quizCard.style.transition = 'transform 0.6s';
+    }, 50); 
 }
 
 /**
