@@ -1,128 +1,172 @@
 /**
- * input.txt + gicul.txt 파일을 읽어와 퀴즈 데이터 배열로 파싱합니다.
- * @returns {Promise<Array>} 퀴즈 데이터 배열
+ * input.txt 파일을 읽어와 퀴즈 데이터 배열로 파싱합니다.
+ * @returns {Promise<Array<Object>>} 퀴즈 데이터 배열
  */
 async function loadQuizzes() {
-    // 1. input.txt 파일 가져오기
-    const responseMain = await fetch('input.txt');
-    const textMain = await responseMain.text();
+    let allQuizzes = [];
 
-    // 2. 줄바꿈으로 나누고, 빈 줄 제거
-    const linesMain = textMain.split('\n').map(l => l.trim()).filter(l => l);
+    // 1. input.txt 파일 로드 및 파싱 (기술/규정)
+    try {
+        const response = await fetch('input.txt');
+        const text = await response.text();
+        const inputQuizzes = parseInputTxt(text);
+        allQuizzes = allQuizzes.concat(inputQuizzes);
+    } catch (error) {
+        console.error("input.txt 로딩 실패:", error);
+    }
 
+    // 2. 기출.txt 파일 로드 및 파싱 (기출)
+    try {
+        const response = await fetch('기출.txt');
+        const text = await response.text();
+        const kichulQuizzes = parseKichulTxt(text);
+        allQuizzes = allQuizzes.concat(kichulQuizzes);
+    } catch (error) {
+        // 기출.txt가 없을 수도 있으므로 경고만 하고 넘어가도 됨
+        console.warn("기출.txt 로딩 실패:", error);
+    }
+
+    console.log(`[Parser] 총 ${allQuizzes.length}개 퀴즈 로드 완료.`);
+    return allQuizzes;
+}
+
+/**
+ * input.txt 파일 내용을 파싱하여 퀴즈 객체를 생성합니다. (기존 로직)
+ */
+function parseInputTxt(text) {
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l);
     const quizzes = [];
-
     let currentQuestion = null;
     let currentAnswerLines = [];
-    let lastId = null; // "1-2." 처럼 ID만 따로 있는 경우를 대비
+    let lastId = null; 
 
     const questionRegex = /^(\d+-\d+)\. (.*)/; // "1-1. 질문 내용" 형식
-    const idRegex = /^(\d+-\d+)\.$/; // "1-2." 형식
+    const idRegex = /^(\d+-\d+)\.$/;       // "1-2." 형식
 
-    // 3. 한 줄씩 읽으면서 퀴즈 객체 만들기 (기존 input.txt 파싱)
-    for (const line of linesMain) {
-        const qMatch = line.match(questionRegex); // ID와 질문이 같이 있는 줄
-        const idMatch = line.match(idRegex); // ID만 있는 줄
+    for (const line of lines) {
+        const qMatch = line.match(questionRegex); 
+        const idMatch = line.match(idRegex);      
 
-        if (qMatch) { // 예: "1-1. 통전시험이란..."
-            // 이전에 처리 중이던 퀴즈가 있다면 저장
+        if (qMatch) { 
             if (currentQuestion) {
-                quizzes.push(createQuizObject(currentQuestion, currentAnswerLines));
+                quizzes.push(createQuizObject(currentQuestion, currentAnswerLines, 'input'));
             }
-
-            // 새 퀴즈 시작
             currentQuestion = { id: qMatch[1], text: line };
             currentAnswerLines = [];
             lastId = null;
-        } else if (idMatch) { // 예: "1-2."
-            // 이전에 처리 중이던 퀴즈가 있다면 저장
-            if (currentQuestion) {
-                quizzes.push(createQuizObject(currentQuestion, currentAnswerLines));
-            }
 
-            // ID를 임시 저장하고 다음 줄에서 질문 텍스트를 기다림
+        } else if (idMatch) { 
+            if (currentQuestion) {
+                quizzes.push(createQuizObject(currentQuestion, currentAnswerLines, 'input'));
+            }
             lastId = idMatch[1];
             currentQuestion = null;
             currentAnswerLines = [];
-        } else if (lastId) { // ID가 임시 저장된 상태에서 텍스트가 들어온 경우
-            // 예: "통전시험을 할 때..."
+
+        } else if (lastId) { 
             currentQuestion = { id: lastId, text: `${lastId}. ${line}` };
             lastId = null;
-        } else if (currentQuestion) { // 현재 퀴즈의 답변 라인
+
+        } else if (currentQuestion) { 
             currentAnswerLines.push(line);
         }
     }
 
-    // 4. 마지막 퀴즈 저장
     if (currentQuestion) {
-        quizzes.push(createQuizObject(currentQuestion, currentAnswerLines));
+        quizzes.push(createQuizObject(currentQuestion, currentAnswerLines, 'input'));
     }
 
-    console.log(`[Parser] 기본 퀴즈 ${quizzes.length}개 로드 완료.`);
+    return quizzes;
+}
 
-    // ✅ 5. gicul.txt 추가 로딩 (요약용 세트)
-    try {
-        const responseGicul = await fetch('gicul.txt');
-        const textGicul = await responseGicul.text();
-        const linesGicul = textGicul.split('\n').map(l => l.replace(/\r/g, '').trim());
+/**
+ * 기출.txt 파일 내용을 파싱하여 퀴즈 객체를 생성합니다.
+ */
+function parseKichulTxt(text) {
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+    const quizzes = [];
+    let currentQuestion = null;
+    let currentAnswerLines = [];
+    let tempIdCounter = 1; // 기출 문제용 임시 ID 카운터
 
-        let curQ = null;
-        let curA = [];
-
-        // gicul.txt는 "1. 질문" / "예," / "ㄱ. ..." 형식이라
-        // "숫자. " 로 시작하는 줄을 질문으로 보고 나머지는 답변으로 묶어준다.
-        const giculQuestionRegex = /^(\d+(\-\d+)?)\.\s*(.*)/;
-
-        for (const line of linesGicul) {
-            if (!line) continue;
-
-            const m = line.match(giculQuestionRegex);
-            if (m) {
-                // 이전 것 정리
-                if (curQ) {
-                    quizzes.push({
-                        id: `G-${curQ.num}`,              // 고유 ID (기존 틀과 겹치지 않게 G- prefix)
-                        question: curQ.text,             // 질문 전체
-                        answer: curA.join('\n').trim(),  // 밑의 예, ㄱ. ~ 모두 답변으로
-                        category: '요약'                  // 새로운 카테고리
-                    });
-                }
-                curQ = { num: m[1], text: line };
-                curA = [];
-            } else {
-                if (curQ) {
-                    curA.push(line);
-                }
+    // "숫자. 질문 내용" 또는 "숫자-숫자. 질문 내용" 또는 "질문 내용"으로 시작하는 패턴
+    // 문제 앞에 붙은 숫자와 구분자(.)를 제거하는 것이 핵심
+    const questionRegex = /^(?:(\d+[.-]?\d*)\. )?(.*)/; 
+    
+    for (const line of lines) {
+        // '예,'로 시작하거나 괄호 안에 있는 설명 줄은 무시
+        if (line.startsWith('예,') || line.startsWith('(') || line.startsWith('----') || line.startsWith('이상입니다!')) {
+            // 답변 라인의 일부일 수 있으므로 답변 라인에 추가는 하되,
+            // 새 문제를 시작하는 조건으로는 사용하지 않음.
+            if (currentQuestion && !line.startsWith('이상입니다!')) {
+                currentAnswerLines.push(line);
             }
-        }
-        if (curQ) {
-            quizzes.push({
-                id: `G-${curQ.num}`,
-                question: curQ.text,
-                answer: curA.join('\n').trim(),
-                category: '요약'
-            });
+            continue;
         }
 
-        console.log('[Parser] gicul 요약 퀴즈 추가 완료.');
-    } catch (e) {
-        console.warn('[Parser] gicul.txt 로딩 실패(무시):', e);
+        const match = line.match(questionRegex);
+        if (!match) continue; 
+        
+        // 문제로 간주할만한 라인인지 확인
+        // 대문자 A-Z로 시작하거나, '숫자.' 패턴 다음에 오는 라인, 또는 문제 같아 보이는 라인
+        const isNewQuestion = match[1] || line.length > 10; 
+
+        if (isNewQuestion) {
+            // 이전에 처리 중이던 퀴즈가 있다면 저장
+            if (currentQuestion) {
+                quizzes.push(createQuizObject(currentQuestion, currentAnswerLines, '기출'));
+            }
+
+            // 문제 텍스트 추출 시, 앞에 붙은 '숫자.' 패턴을 제거
+            let questionText = line;
+            if (match[1]) {
+                // 숫자. 또는 숫자-숫자. 패턴을 제거
+                questionText = match[2].trim();
+            } else {
+                 // 숫자가 없는 경우 그대로 사용 (예: "총괄제어시 피제어차의 기기취급법과 운전보안장치 취급법")
+            }
+            
+            // 새 퀴즈 시작
+            currentQuestion = { id: `K-${tempIdCounter++}`, text: questionText };
+            currentAnswerLines = [];
+        } else if (currentQuestion) { 
+            // 답변 라인
+            currentAnswerLines.push(line);
+        }
     }
 
-    console.log(`[Parser] 전체 퀴즈 ${quizzes.length}개 로드 완료.`);
+    // 마지막 퀴즈 저장
+    if (currentQuestion) {
+        quizzes.push(createQuizObject(currentQuestion, currentAnswerLines, '기출'));
+    }
+
     return quizzes;
 }
 
 /**
  * 퀴즈 객체를 생성하고 분류합니다.
  */
-function createQuizObject(question, answerLines) {
+function createQuizObject(question, answerLines, source) {
+    let category = '';
+    if (source === '기출') {
+        category = '기출';
+    } else {
+        // input.txt의 기존 분류 로직 유지
+        category = question.id.startsWith('1-') ? '기술' : '규정';
+    }
+
+    // 답변 정리: '예,'나 '이상입니다!' 줄 제거 및 불필요한 공백 제거
+    const cleanedAnswer = answerLines
+        .filter(line => !line.startsWith('예,') && !line.startsWith('이상입니다!') && !line.startsWith('('))
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .join('\n'); // 답변의 줄바꿈 유지
+
     return {
         id: question.id,
-        question: question.text,
-        answer: answerLines.join('\n').trim(), // 답변의 줄바꿈 유지
-        category: question.id.startsWith('1-')
-            ? '기술'
-            : '규정'
+        // input.txt에서 온 경우 id까지 포함된 text를, 기출.txt에서 온 경우 정리된 text만 사용
+        question: source === 'input' ? question.text : question.text, 
+        answer: cleanedAnswer, 
+        category: category
     };
 }
