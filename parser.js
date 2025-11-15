@@ -83,59 +83,68 @@ function parseInputTxt(text) {
  * 기출.txt 파일 내용을 파싱하여 퀴즈 객체를 생성합니다.
  */
 function parseKichulTxt(text) {
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+    const lines = text.split('\n').map(l => l.trim()); // 빈 줄 포함
     const quizzes = [];
     let currentQuestion = null;
     let currentAnswerLines = [];
-    let tempIdCounter = 1; // 기출 문제용 임시 ID 카운터
+    let tempIdCounter = 1; 
 
-    // "숫자. 질문 내용" 또는 "숫자-숫자. 질문 내용" 또는 "질문 내용"으로 시작하는 패턴
-    // 문제 앞에 붙은 숫자와 구분자(.)를 제거하는 것이 핵심
-    const questionRegex = /^(?:(\d+[.-]?\d*)\. )?(.*)/; 
+    // 새로운 문제 시작 패턴: 숫자. 질문 내용
+    const newQuestionRegex = /^\\s*(\d+[-]?\d*)\.\s*(.*)/;
     
+    // 복잡한 답변 줄 구분을 위한 패턴들
+    const answerStartRegex = /^예,/;
+    const answerEndRegex = /이상입니다!/;
+    
+    let isParsingAnswer = false;
+
     for (const line of lines) {
-        // '예,'로 시작하거나 괄호 안에 있는 설명 줄은 무시
-        if (line.startsWith('예,') || line.startsWith('(') || line.startsWith('----') || line.startsWith('이상입니다!')) {
-            // 답변 라인의 일부일 수 있으므로 답변 라인에 추가는 하되,
-            // 새 문제를 시작하는 조건으로는 사용하지 않음.
-            if (currentQuestion && !line.startsWith('이상입니다!')) {
-                currentAnswerLines.push(line);
-            }
-            continue;
-        }
+        if (!line) continue; // 빈 줄은 무시
 
-        const match = line.match(questionRegex);
-        if (!match) continue; 
-        
-        // 문제로 간주할만한 라인인지 확인
-        // 대문자 A-Z로 시작하거나, '숫자.' 패턴 다음에 오는 라인, 또는 문제 같아 보이는 라인
-        const isNewQuestion = match[1] || line.length > 10; 
+        const qMatch = line.match(newQuestionRegex);
 
-        if (isNewQuestion) {
+        if (qMatch) {
             // 이전에 처리 중이던 퀴즈가 있다면 저장
             if (currentQuestion) {
                 quizzes.push(createQuizObject(currentQuestion, currentAnswerLines, '기출'));
             }
 
-            // 문제 텍스트 추출 시, 앞에 붙은 '숫자.' 패턴을 제거
-            let questionText = line;
-            if (match[1]) {
-                // 숫자. 또는 숫자-숫자. 패턴을 제거
-                questionText = match[2].trim();
-            } else {
-                 // 숫자가 없는 경우 그대로 사용 (예: "총괄제어시 피제어차의 기기취급법과 운전보안장치 취급법")
-            }
-            
             // 새 퀴즈 시작
-            currentQuestion = { id: `K-${tempIdCounter++}`, text: questionText };
+            const quizNumber = qMatch[1]; // 예: 1, 5-1
+            let questionText = qMatch[2].trim(); // 질문 내용
+            
+            // 질문 내용에 괄호로 묶인 부가 설명 제거 (옵션)
+            // 예: "공기제동시험을 시행하는 경우는 언제인가? (제동관+주공기관 파열 조치 후 발차 시)" -> "공기제동시험을 시행하는 경우는 언제인가?"
+            questionText = questionText.replace(/\s*\([^)]+\)$/, '').trim();
+
+            currentQuestion = { id: `K-${quizNumber}`, text: questionText };
             currentAnswerLines = [];
-        } else if (currentQuestion) { 
-            // 답변 라인
-            currentAnswerLines.push(line);
+            isParsingAnswer = false; // 답변 파싱 상태 초기화
+
+        } else if (answerStartRegex.test(line)) {
+            // 답변 시작: '예,'
+            isParsingAnswer = true;
+            
+        } else if (answerEndRegex.test(line)) {
+            // 답변 종료: '이상입니다!'
+            if (currentQuestion) {
+                // 현재 처리 중인 퀴즈에 마지막 답변 줄을 추가 (이상입니다! 자체는 제외)
+                quizzes.push(createQuizObject(currentQuestion, currentAnswerLines, '기출'));
+                currentQuestion = null;
+                currentAnswerLines = [];
+            }
+            isParsingAnswer = false;
+
+        } else if (currentQuestion && isParsingAnswer) {
+            // 현재 문제의 답변을 모으는 중
+            // 불필요한 주석/메모 제거
+            if (!line.startsWith('(') && !line.startsWith('----')) {
+                 currentAnswerLines.push(line);
+            }
         }
     }
 
-    // 마지막 퀴즈 저장
+    // 마지막 퀴즈 저장 (이상입니다! 로 끝나지 않은 경우)
     if (currentQuestion) {
         quizzes.push(createQuizObject(currentQuestion, currentAnswerLines, '기출'));
     }
@@ -148,24 +157,26 @@ function parseKichulTxt(text) {
  */
 function createQuizObject(question, answerLines, source) {
     let category = '';
+    let processedQuestion = question.text;
+
     if (source === '기출') {
         category = '기출';
+        // 기출 문제의 경우, 질문 텍스트에서 나 문제 번호를 제거 (이미 parseKichulTxt에서 처리됨)
+        // 여기서는 최종적으로 정리된 질문을 사용
     } else {
         // input.txt의 기존 분류 로직 유지
         category = question.id.startsWith('1-') ? '기술' : '규정';
     }
 
-    // 답변 정리: '예,'나 '이상입니다!' 줄 제거 및 불필요한 공백 제거
+    // 답변 정리: 불필요한 라인 제거 및 포맷팅
     const cleanedAnswer = answerLines
-        .filter(line => !line.startsWith('예,') && !line.startsWith('이상입니다!') && !line.startsWith('('))
-        .map(line => line.trim())
         .filter(line => line.length > 0)
+        .map(line => line.trim())
         .join('\n'); // 답변의 줄바꿈 유지
 
     return {
         id: question.id,
-        // input.txt에서 온 경우 id까지 포함된 text를, 기출.txt에서 온 경우 정리된 text만 사용
-        question: source === 'input' ? question.text : question.text, 
+        question: processedQuestion,
         answer: cleanedAnswer, 
         category: category
     };
