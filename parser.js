@@ -81,72 +81,38 @@ function parseInputTxt(text) {
 
 /**
  * 기출.txt 파일 내용을 파싱하여 퀴즈 객체를 생성합니다.
+ * (문제마다 엔터로 구분된 새로운 형식에 맞게 수정)
  */
 function parseKichulTxt(text) {
-    const lines = text.split('\n').map(l => l.trim()); // 빈 줄 포함
+    // 퀴즈 블록을 구분합니다 (두 개 이상의 줄바꿈으로 구분)
+    const quizBlocks = text.split(/\n\s*\n/g).map(block => block.trim()).filter(block => block.length > 0);
     const quizzes = [];
-    let currentQuestion = null;
-    let currentAnswerLines = [];
     let tempIdCounter = 1; 
 
-    // 새로운 문제 시작 패턴: 숫자. 질문 내용
-    const newQuestionRegex = /^\\s*(\d+[-]?\d*)\.\s*(.*)/;
-    
-    // 복잡한 답변 줄 구분을 위한 패턴들
-    const answerStartRegex = /^예,/;
-    const answerEndRegex = /이상입니다!/;
-    
-    let isParsingAnswer = false;
+    // 문제 번호와 source 태그를 제거하는 정규식
+    const questionCleanRegex = /^(?:\\s*)?(\d+[-]?\d*)\.\s*(.*)/;
 
-    for (const line of lines) {
-        if (!line) continue; // 빈 줄은 무시
+    for (const block of quizBlocks) {
+        const lines = block.split('\n').map(l => l.trim());
+        if (lines.length === 0) continue;
 
-        const qMatch = line.match(newQuestionRegex);
+        // 1. 질문 추출 및 번호 제거
+        let questionLine = lines[0];
+        let questionText = questionLine;
+        let quizId = `K-${tempIdCounter++}`;
 
-        if (qMatch) {
-            // 이전에 처리 중이던 퀴즈가 있다면 저장
-            if (currentQuestion) {
-                quizzes.push(createQuizObject(currentQuestion, currentAnswerLines, '기출'));
-            }
-
-            // 새 퀴즈 시작
-            const quizNumber = qMatch[1]; // 예: 1, 5-1
-            let questionText = qMatch[2].trim(); // 질문 내용
-            
-            // 질문 내용에 괄호로 묶인 부가 설명 제거 (옵션)
-            // 예: "공기제동시험을 시행하는 경우는 언제인가? (제동관+주공기관 파열 조치 후 발차 시)" -> "공기제동시험을 시행하는 경우는 언제인가?"
-            questionText = questionText.replace(/\s*\([^)]+\)$/, '').trim();
-
-            currentQuestion = { id: `K-${quizNumber}`, text: questionText };
-            currentAnswerLines = [];
-            isParsingAnswer = false; // 답변 파싱 상태 초기화
-
-        } else if (answerStartRegex.test(line)) {
-            // 답변 시작: '예,'
-            isParsingAnswer = true;
-            
-        } else if (answerEndRegex.test(line)) {
-            // 답변 종료: '이상입니다!'
-            if (currentQuestion) {
-                // 현재 처리 중인 퀴즈에 마지막 답변 줄을 추가 (이상입니다! 자체는 제외)
-                quizzes.push(createQuizObject(currentQuestion, currentAnswerLines, '기출'));
-                currentQuestion = null;
-                currentAnswerLines = [];
-            }
-            isParsingAnswer = false;
-
-        } else if (currentQuestion && isParsingAnswer) {
-            // 현재 문제의 답변을 모으는 중
-            // 불필요한 주석/메모 제거
-            if (!line.startsWith('(') && !line.startsWith('----')) {
-                 currentAnswerLines.push(line);
-            }
+        const match = questionLine.match(questionCleanRegex);
+        if (match) {
+            questionText = match[2].trim(); // 질문 내용만 추출
+            quizId = `K-${match[1]}`; // 문제 번호로 ID 사용
         }
-    }
 
-    // 마지막 퀴즈 저장 (이상입니다! 로 끝나지 않은 경우)
-    if (currentQuestion) {
-        quizzes.push(createQuizObject(currentQuestion, currentAnswerLines, '기출'));
+        // 2. 답변 라인 추출 (첫 줄 제외)
+        const answerLines = lines.slice(1);
+        
+        const currentQuestion = { id: quizId, text: questionText };
+        
+        quizzes.push(createQuizObject(currentQuestion, answerLines, '기출'));
     }
 
     return quizzes;
@@ -161,16 +127,16 @@ function createQuizObject(question, answerLines, source) {
 
     if (source === '기출') {
         category = '기출';
-        // 기출 문제의 경우, 질문 텍스트에서 나 문제 번호를 제거 (이미 parseKichulTxt에서 처리됨)
-        // 여기서는 최종적으로 정리된 질문을 사용
     } else {
         // input.txt의 기존 분류 로직 유지
         category = question.id.startsWith('1-') ? '기술' : '규정';
+        // input.txt의 경우 질문 앞에 ID. 를 붙인 원본 텍스트를 사용
     }
 
-    // 답변 정리: 불필요한 라인 제거 및 포맷팅
+    // 답변 정리: '예,', '이상입니다!' 등의 불필요한 라인과 괄호 안의 주석 제거 및 포맷팅
     const cleanedAnswer = answerLines
         .filter(line => line.length > 0)
+        .filter(line => !line.startsWith('예,') && !line.startsWith('이상입니다!') && !line.startsWith('(') && !line.startsWith('----'))
         .map(line => line.trim())
         .join('\n'); // 답변의 줄바꿈 유지
 
