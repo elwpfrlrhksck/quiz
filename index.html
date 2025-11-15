@@ -1,52 +1,50 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>기관차 퀴즈</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>간단 퀴즈</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- 1. 시작 화면 -->
-  <div id="start-screen" class="screen active">
-    <h1>퀴즈 범위 선택</h1>
-    <button class="btn-menu" data-mode="all">1. 전체 (0개)</button>
-    <button class="btn-menu" data-mode="기술">2. 기술 (0개)</button>
-    <button class="btn-menu" data-mode="규정">3. 규정 (0개)</button>
-    <!-- 새로 추가되는 기출 버튼 -->
-    <button class="btn-menu" data-mode="기출">4. 기출 (0개)</button>
-    <!-- 기존 직접 선택 버튼 (번호만 5번으로 바뀐 것처럼 보이게 텍스트만 변경) -->
-    <button class="btn-menu" data-mode="select">5. 직접 선택</button>
-  </div>
 
-  <!-- 2. 직접 선택 화면 -->
-  <div id="selection-screen" class="screen">
-    <h1>문제 직접 선택</h1>
-    <div id="selection-list"></div>
-    <button id="btn-start-custom" class="btn-main">선택 완료 (0개)</button>
-    <button id="btn-back-to-menu-select" class="btn-sub">뒤로가기</button>
-  </div>
-
-  <!-- 3. 퀴즈 화면 -->
-  <div id="quiz-screen" class="screen">
-    <div id="quiz-header">
-      <span id="quiz-counter">1 / 10</span>
+    <div id="start-screen" class="screen active">
+        <h1>퀴즈 범위 선택</h1>
+        <button class="btn-menu" data-mode="all">1. 전체 (0개)</button>
+        <button class="btn-menu" data-mode="기술">2. 기술 (0개)</button>
+        <button class="btn-menu" data-mode="규정">3. 규정 (0개)</button>
+        <button class="btn-menu" data-mode="select">4. 직접 선택</button>
     </div>
-    <div id="quiz-card-container">
-      <div id="quiz-card">
-        <div class="card-face card-front">
-          <p id="question-text">문제 로딩 중...</p>
-        </div>
-        <div class="card-face card-back">
-          <p id="answer-text">답변 로딩 중...</p>
-        </div>
-      </div>
-    </div>
-    <button id="btn-next" class="btn-main">다음 문제</button>
-    <button id="btn-back-to-menu-quiz" class="btn-sub">메뉴로</button>
-  </div>
 
-  <script type="module" src="parser.js"></script>
-  <script type="module" src="script.js"></script>
+    <div id="selection-screen" class="screen">
+        <h1>문제 직접 선택</h1>
+        <div id="selection-list">
+            </div>
+        <button id="btn-start-custom" class="btn-main">선택 완료 (0개)</button>
+        <button id="btn-back-to-menu-select" class="btn-sub">뒤로가기</button>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div id="quiz-header">
+            <span id="quiz-counter">1 / 10</span>
+        </div>
+        
+        <div id="quiz-card-container">
+            <div id="quiz-card">
+                <div class="card-face card-front">
+                    <p id="question-text">문제 로딩 중...</p>
+                </div>
+                <div class="card-face card-back">
+                    <p id="answer-text">답변 로딩 중...</p>
+                </div>
+            </div>
+        </div>
+        
+        <button id="btn-next" class="btn-main">다음 문제</button>
+        <button id="btn-back-to-menu-quiz" class="btn-sub">메뉴로</button>
+    </div>
+
+    <script src="parser.js"></script> 
+    <script src="script.js"></script>
 </body>
 </html>
