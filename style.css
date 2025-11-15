@@ -1,239 +1,204 @@
-/* 기본 설정 */
-:root {
-    --bg-color: #f0f2f5;
-    --card-color: #ffffff;
-    --text-color: #333;
-    --primary-color: #007bff;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
+/* style.css */
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    margin: 0;
-    padding: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
 }
 
-/* 스크린 관리 */
+/* 화면 공통 */
 .screen {
-    width: 100%;
-    max-width: 600px;
-    display: none;
-    flex-direction: column;
-    align-items: center;
+  display: none;
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
 }
+
 .screen.active {
-    display: flex;
+  display: block;
 }
 
-h1 {
-    font-size: 1.8rem;
-    color: var(--primary-color);
-    margin-bottom: 30px;
-    text-align: center;
+/* 버튼 공통 */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  padding: 10px 14px;
+  margin: 4px 0;
 }
 
-/* 공통 버튼 스타일 */
-.btn-main, .btn-sub, .btn-menu {
-    width: 100%;
-    padding: 18px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-sizing: border-box;
-}
 .btn-main {
-    background-color: var(--primary-color);
-    color: white;
-    margin-top: 20px;
+  background-color: #007bff;
+  color: white;
 }
+
 .btn-main:hover {
-    filter: brightness(1.1);
+  background-color: #0056b3;
 }
+
 .btn-sub {
-    background-color: #e9ecef;
-    color: #495057;
-    margin-top: 10px;
+  background-color: #ddd;
+  color: #333;
+  margin-left: 8px;
 }
+
 .btn-sub:hover {
-    background-color: #dee2e6;
+  background-color: #ccc;
 }
+
+/* 메뉴 버튼 */
+#start-screen {
+  text-align: center;
+}
+
+#start-screen h1 {
+  margin-bottom: 20px;
+}
+
 .btn-menu {
-    background-color: var(--card-color);
-    color: var(--text-color);
-    border: 1px solid #ddd;
-    margin-bottom: 12px;
-    text-align: left;
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  margin: 8px auto;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
 }
+
 .btn-menu:hover {
-    background-color: #f8f9fa;
-    border-color: var(--primary-color);
+  background-color: #f0f0f0;
 }
 
-/* 2. 직접 선택 화면 */
-#selection-list {
-    width: 100%;
-    max-height: 50vh;
-    overflow-y: auto;
-    background: var(--card-color);
-    border-radius: 10px;
-    border: 1px solid #eee;
-    padding: 10px 0;
-}
-.selection-item {
-    display: flex;
-    align-items: center;
-    padding: 12px 20px;
-    border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
-    font-size: 0.95rem;
-}
-.selection-item:last-child {
-    border-bottom: none;
-}
-.selection-item input {
-    margin-right: 15px;
-    width: 20px;
-    height: 20px;
-}
-.selection-item label {
-    flex: 1;
-    cursor: pointer;
-    line-height: 1.4;
-}
-
-/* [개선된 스타일] 프리셋 */
-.preset-container {
-    width: 100%;
-    margin: 10px 0;
-    padding: 15px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    box-sizing: border-box;
-}
-.preset-container strong {
-    font-size: 1rem;
-    color: #333;
-    display: block;
-    margin-bottom: 12px;
-    text-align: center;
-}
-.preset-slots {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-.btn-slot {
-    flex: 1; /* 4개 버튼이 1:1:1:1 비율 */
-    padding: 10px 5px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: white;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-slot:hover {
-    background-color: #e9ecef;
-}
-/* 선택된 슬롯 스타일 */
-.btn-slot.active {
-    background-color: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-    font-weight: 700;
-}
-
-.preset-actions {
-    display: flex;
-    gap: 8px;
-}
-.btn-preset {
-    flex: 1; /* 2개 버튼이 1:1 비율 */
-    padding: 12px;
-    font-size: 1rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-preset.action-load {
-    background-color: #e6f7ff;
-    color: #0056b3;
-}
-.btn-preset.action-load:hover {
-    background-color: #cce5ff;
-}
-.btn-preset.action-save {
-    background-color: #e6fff0;
-    color: #155724;
-}
-.btn-preset.action-save:hover {
-    background-color: #d4edda;
-}
-
-/* 3. 퀴즈 풀이 화면 */
-#quiz-header {
-    width: 100%;
-    text-align: center;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #888;
-    margin-bottom: 15px;
-}
+/* 퀴즈 카드 */
 #quiz-card-container {
-    width: 100%;
-    min-height: 45vh; 
-    perspective: 1500px;
+  perspective: 1000px;
+  margin: 40px auto;
+  max-width: 600px;
 }
+
 #quiz-card {
-    width: 100%;
-    height: 100%;
-    min-height: 45vh;
-    position: relative;
-    transform-style: preserve-3d;
-    transition: transform 0.6s;
-    cursor: pointer;
-    display: flex;
+  width: 100%;
+  min-height: 200px;
+  position: relative;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
 }
-.card-face {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    background-color: var(--card-color);
-    border-radius: 15px;
-    box-shadow: var(--shadow);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 25px;
-    box-sizing: border-box;
-    overflow-y: auto;
-}
-.card-face p {
-    font-size: 1.3rem;
-    line-height: 1.7;
-    margin: 0;
-    white-space: pre-wrap;
-}
-.card-back {
-    transform: rotateY(180deg);
-}
-.card-back p {
-    font-size: 1.1rem;
-}
+
 #quiz-card.is-flipped {
-    transform: rotateY(180deg);
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  width: 100%;
+  backface-visibility: hidden;
+  border-radius: 8px;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.card-front {
+  z-index: 2;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+}
+
+/* 질문/답 텍스트 */
+#question-text,
+#answer-text {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+/* 퀴즈 헤더 */
+#quiz-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 선택 화면 */
+#selection-screen h1 {
+  margin-bottom: 16px;
+}
+
+/* 상단 카테고리 버튼 */
+#selection-category-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.select-category-btn {
+  flex: 1;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+}
+
+.select-category-btn.active {
+  background-color: #007bff;
+  color: #fff;
+  border-color: #0056b3;
+}
+
+/* 카테고리 별 블록 */
+.selection-category-block {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+/* h2 자체에 클릭 이벤트를 줄 수도 있음 */
+.selection-category-block h2 {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 17px;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+/* 안쪽 리스트 */
+.selection-list-inner {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease-out;
+  padding: 0 12px;
+}
+
+/* 펼쳐진 상태 */
+.selection-category-block.open .selection-list-inner {
+  padding: 8px 12px 10px;
+  max-height: 400px; /* 필요시 조정 */
+}
+
+/* 리스트 항목 */
+.selection-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.selection-item label {
+  flex: 1;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.selection-item input[type="checkbox"] {
+  margin-top: 3px;
+}
+
+/* 반응형 */
+@media (max-width: 600px) {
+  #selection-category-buttons {
+    flex-direction: column;
+  }
 }
