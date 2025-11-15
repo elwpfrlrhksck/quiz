@@ -13,6 +13,7 @@ const quizCard = document.getElementById('quiz-card');
 const questionText = document.getElementById('question-text');
 const answerText = document.getElementById('answer-text');
 const quizCounter = document.getElementById('quiz-counter');
+const cardBack = document.querySelector('.card-back'); // 높이 계산을 위한 뒷면 카드 요소
 
 const selectionCategoryList = document.getElementById('selection-category-list');
 const btnStartCustom = document.getElementById('btn-start-custom');
@@ -95,7 +96,6 @@ function setupSelectionScreen() {
         
         // 문제 항목 생성
         categoryQuizzes.forEach((quiz) => {
-            // ★★★★★ 수정된 부분: K-7 퀴즈도 목록에 포함시킵니다. ★★★★★
             
             const item = document.createElement('div');
             item.className = 'selection-item';
@@ -118,7 +118,7 @@ function setupSelectionScreen() {
                 questionDisplay = `${quiz.id}. ${questionDisplay}`;
             }
             
-            // ★★★★★ 수정된 부분: 7번 문제인 경우 (5문제) 표시 ★★★★★
+            // 7번 문제인 경우 (5문제) 표시
             if (quiz.id === 'K-7') {
                 questionDisplay = `${questionDisplay} (5문제)`;
             }
@@ -158,8 +158,6 @@ function setupSelectionScreen() {
     btnStartCustom.addEventListener('click', () => {
         const selectedIds = Array.from(selectionCategoryList.querySelectorAll('input:checked'))
                                  .map(input => input.value);
-        
-        // ★★★★★ 수정된 부분: 7번 퀴즈만 선택되어도 문제가 출제되도록 별도 처리 불필요 ★★★★★
         
         if (selectedIds.length === 0) {
             alert("하나 이상의 문제를 선택하세요.");
@@ -233,7 +231,7 @@ function startQuiz(mode) {
 
     currentQuizSet = tempQuizSet;
     
-    // 서브 퀴즈로 대체된 후 다시 섞어줍니다. (선택적)
+    // 서브 퀴즈로 대체된 후 다시 섞어줍니다.
     shuffleArray(currentQuizSet);
     
     displayQuestion();
@@ -241,12 +239,10 @@ function startQuiz(mode) {
 }
 
 /**
- * 현재 인덱스의 퀴즈를 화면에 표시합니다.
+ * 현재 인덱스의 퀴즈를 화면에 표시하고, 내용 길이에 따라 폰트 크기를 조정합니다.
  */
 function displayQuestion() {
-    // 다음 문제로 넘어가기 전 카드 플립 상태를 강제 초기화 (애니메이션 문제 해결)
-    
-    // 1. 애니메이션 끄기
+    // 1. 애니메이션 끄기 및 플립 초기화
     quizCard.style.transition = 'none'; 
     quizCard.classList.remove('is-flipped');
     
@@ -257,10 +253,29 @@ function displayQuestion() {
     answerText.textContent = quiz.answer.length > 0 ? quiz.answer : "(답변 내용이 없습니다)";
     quizCounter.textContent = `${currentQuestionIndex + 1} / ${currentQuizSet.length}`;
     
-    // 3. 애니메이션 속성 복원 (다음 뒤집기 동작을 위해)
+    // ★★★★★ 수정된 부분: 폰트 크기 동적 조정 로직 추가 ★★★★★
+    
+    // 폰트 크기 조정 전에 0.1초 대기 (DOM 렌더링 후 높이 계산을 정확히 하기 위해)
     setTimeout(() => {
-        quizCard.style.transition = 'transform 0.6s';
-    }, 50); 
+        // 폰트 클래스 초기화
+        answerText.classList.remove('small-font');
+        
+        // 폰트가 원래 크기일 때의 높이를 측정
+        // 높이 측정 시에는 카드 뒷면(cardBack)을 기준으로 측정해야 합니다.
+        const scrollHeight = answerText.scrollHeight;
+        const clientHeight = cardBack.clientHeight; 
+        
+        // 30px의 여유 공간을 두고 비교합니다.
+        if (scrollHeight > clientHeight + 30) { 
+            answerText.classList.add('small-font');
+        }
+        
+        // 3. 애니메이션 속성 복원
+        setTimeout(() => {
+            quizCard.style.transition = 'transform 0.6s';
+        }, 50); 
+        
+    }, 100); 
 }
 
 /**
