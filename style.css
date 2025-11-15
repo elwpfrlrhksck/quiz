@@ -209,13 +209,12 @@ h1 {
     margin: 0;
     /* 줄바꿈(\n)을 CSS로 처리 */
     white-space: pre-wrap;
-    /* 기본 정렬은 flex-start로 유지 */
+    /* 기본 정렬: 세로 정렬은 각 면에서 따로 설정 */
     align-self: flex-start;
-    /* 질문과 답변의 텍스트 정렬은 아래에서 따로 설정 */
     text-align: left;
     width: 100%; /* p 태그가 부모 너비 전체를 사용하도록 */
     
-    /* ★★★★★ 답변 기본 폰트 크기 유지 ★★★★★ */
+    /* 답변 기본 폰트 크기 유지 */
     font-size: 1.1rem;
     transition: font-size 0.2s ease;
 }
@@ -224,6 +223,7 @@ h1 {
 .card-front p {
     font-size: 1.3rem; /* 질문 폰트 크기는 그대로 유지 */
     text-align: center; 
+    /* 세로 중앙 정렬 */
     align-self: center; 
 }
 
@@ -233,16 +233,19 @@ h1 {
     transform: rotateY(180deg);
 }
 
-/* ★★★★★ 스크롤 필요 시 적용될 작은 폰트 클래스 ★★★★★ */
+.card-back p {
+    /* ★★★★★ 답변을 항상 세로 중앙에 위치하도록 변경 ★★★★★ */
+    align-self: center; 
+    
+    /* 답변은 텍스트 자체는 왼쪽 정렬 */
+    text-align: left; 
+    padding-top: 5px; /* 스크롤 시 내용이 상단에 붙는 것을 방지 */
+}
+
+/* 스크롤 필요 시 적용될 작은 폰트 클래스 */
 .card-back p.small-font {
     font-size: 0.95rem; /* 평소보다 작은 폰트 크기 */
     line-height: 1.6;
-}
-
-.card-back p {
-    /* 답변은 상단 좌측부터 시작 (align-self: flex-start 유지) */
-    text-align: left; 
-    padding-top: 5px; /* 스크롤 시 내용이 상단에 붙는 것을 방지 */
 }
 
 /* 카드가 뒤집혔을 때 */
