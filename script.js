@@ -95,8 +95,7 @@ function setupSelectionScreen() {
         
         // 문제 항목 생성
         categoryQuizzes.forEach((quiz) => {
-            // 7번 문제 원본은 목록에 표시하지 않음 (대신 서브 퀴즈로 출제됨)
-            if (quiz.id === 'K-7') return; 
+            // ★★★★★ 수정된 부분: K-7 퀴즈도 목록에 포함시킵니다. ★★★★★
             
             const item = document.createElement('div');
             item.className = 'selection-item';
@@ -117,6 +116,11 @@ function setupSelectionScreen() {
                 const idRegex = new RegExp(`^${quiz.id}\\. `);
                 questionDisplay = quiz.question.replace(idRegex, '');
                 questionDisplay = `${quiz.id}. ${questionDisplay}`;
+            }
+            
+            // ★★★★★ 수정된 부분: 7번 문제인 경우 (5문제) 표시 ★★★★★
+            if (quiz.id === 'K-7') {
+                questionDisplay = `${questionDisplay} (5문제)`;
             }
 
             label.textContent = questionDisplay;
@@ -155,12 +159,7 @@ function setupSelectionScreen() {
         const selectedIds = Array.from(selectionCategoryList.querySelectorAll('input:checked'))
                                  .map(input => input.value);
         
-        // 7번 퀴즈는 선택 목록에 없으므로, 전체 퀴즈 목록에서 직접 찾아서 추가해야 함.
-        const original7thQuiz = allQuizData.find(q => q.id === 'K-7');
-        if (original7thQuiz && original7thQuiz.subQuizzes && original7thQuiz.subQuizzes.length > 0) {
-            // 7번 퀴즈가 서브 퀴즈를 가지고 있다면, 서브 퀴즈를 포함하는 원본 퀴즈를 세트에 추가
-            selectedIds.push(original7thQuiz.id);
-        }
+        // ★★★★★ 수정된 부분: 7번 퀴즈만 선택되어도 문제가 출제되도록 별도 처리 불필요 ★★★★★
         
         if (selectedIds.length === 0) {
             alert("하나 이상의 문제를 선택하세요.");
@@ -221,8 +220,7 @@ function startQuiz(mode) {
     // 퀴즈 순서 섞기
     shuffleArray(currentQuizSet);
     
-    // ★★★★★ 수정된 부분: K-7 퀴즈를 서브 퀴즈 5개로 대체 ★★★★★
-    
+    // K-7 퀴즈를 서브 퀴즈 5개로 대체
     let tempQuizSet = [];
     currentQuizSet.forEach((quiz) => {
         if (quiz.id === 'K-7' && quiz.subQuizzes) {
@@ -234,10 +232,9 @@ function startQuiz(mode) {
     });
 
     currentQuizSet = tempQuizSet;
-    // 7번 퀴즈를 제외한 나머지 퀴즈를 다시 섞음 (선택적으로)
-    // shuffleArray(currentQuizSet); 
-    // 이미 K-7만 서브퀴즈로 대체하고 나머지는 섞여있으므로 추가 셔플은 선택 사항입니다.
-    // -----------------------------------------------------------
+    
+    // 서브 퀴즈로 대체된 후 다시 섞어줍니다. (선택적)
+    shuffleArray(currentQuizSet);
     
     displayQuestion();
     showScreen(quizScreen);
@@ -247,7 +244,7 @@ function startQuiz(mode) {
  * 현재 인덱스의 퀴즈를 화면에 표시합니다.
  */
 function displayQuestion() {
-    // ★★★★★ 수정된 부분: 다음 문제로 넘어가기 전 카드 플립 상태를 강제 초기화 (애니메이션 문제 해결) ★★★★★
+    // 다음 문제로 넘어가기 전 카드 플립 상태를 강제 초기화 (애니메이션 문제 해결)
     
     // 1. 애니메이션 끄기
     quizCard.style.transition = 'none'; 
