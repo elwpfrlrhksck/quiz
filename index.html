@@ -2,49 +2,58 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>간단 퀴즈</title>
+    <title>구술 퀴즈</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
+    <!-- 1. 시작 화면 -->
     <div id="start-screen" class="screen active">
-        <h1>퀴즈 범위 선택</h1>
-        <button class="btn-menu" data-mode="all">1. 전체 (0개)</button>
-        <button class="btn-menu" data-mode="기술">2. 기술 (0개)</button>
-        <button class="btn-menu" data-mode="규정">3. 규정 (0개)</button>
-        <button class="btn-menu" data-mode="select">4. 직접 선택</button>
+        <h1>구술 퀴즈</h1>
+        <div class="menu">
+            <button class="btn-menu" data-mode="all">1. 전체</button>
+            <button class="btn-menu" data-mode="기술">2. 기술</button>
+            <button class="btn-menu" data-mode="규정">3. 규정</button>
+            <!-- ✅ 새로 추가된 4번 메뉴 (요약) -->
+            <button class="btn-menu" data-mode="요약">4. 요약</button>
+            <button class="btn-menu" data-mode="select">직접 선택</button>
+        </div>
     </div>
 
+    <!-- 2. 직접 선택 화면 -->
     <div id="selection-screen" class="screen">
-        <h1>문제 직접 선택</h1>
-        <div id="selection-list">
-            </div>
-        <button id="btn-start-custom" class="btn-main">선택 완료 (0개)</button>
-        <button id="btn-back-to-menu-select" class="btn-sub">뒤로가기</button>
+        <h2>문제 직접 선택</h2>
+        <div id="selection-list"></div>
+        <div class="selection-buttons">
+            <button id="btn-back-to-menu-select" class="btn-sub">메뉴로</button>
+            <button id="btn-start-custom" class="btn-main">선택 완료 (0개)</button>
+        </div>
     </div>
 
+    <!-- 3. 퀴즈 화면 -->
     <div id="quiz-screen" class="screen">
         <div id="quiz-header">
-            <span id="quiz-counter">1 / 10</span>
+            <button id="btn-back-to-menu-quiz" class="btn-sub">메뉴로</button>
+            <span id="quiz-counter">0 / 0</span>
         </div>
-        
-        <div id="quiz-card-container">
-            <div id="quiz-card">
-                <div class="card-face card-front">
-                    <p id="question-text">문제 로딩 중...</p>
+
+        <!-- 카드 영역 (앞/뒤 flip) -->
+        <div id="quiz-card" class="quiz-card">
+            <div class="quiz-card-inner">
+                <div class="quiz-card-front">
+                    <div id="question-text" class="quiz-text"></div>
                 </div>
-                <div class="card-face card-back">
-                    <p id="answer-text">답변 로딩 중...</p>
+                <div class="quiz-card-back">
+                    <div id="answer-text" class="quiz-text"></div>
                 </div>
             </div>
         </div>
-        
-        <button id="btn-next" class="btn-main">다음 문제</button>
-        <button id="btn-back-to-menu-quiz" class="btn-sub">메뉴로</button>
+
+        <div id="quiz-footer">
+            <button id="btn-next" class="btn-main">다음 문제</button>
+        </div>
     </div>
 
-    <script src="parser.js"></script> 
+    <script src="parser.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
