@@ -107,9 +107,18 @@ function setupSelectionScreen() {
             
             const label = document.createElement('label');
             label.htmlFor = `q-${quiz.id}`;
-            // 기출 문제가 아닐 경우에만 ID를 질문 앞에 붙여 표시
-            const questionText = quiz.category !== '기출' ? `${quiz.id}. ${quiz.question.replace(new RegExp(`^${quiz.id}\\. `), '')}` : quiz.question;
-            label.textContent = questionText;
+            
+            // 질문 텍스트 정리 (input.txt의 경우 ID. 제거)
+            let questionDisplay = quiz.question;
+            if (quiz.category !== '기출') {
+                // ID가 붙어있는 경우 제거 (parser에서 이미 처리된 경우 대비)
+                const idRegex = new RegExp(`^${quiz.id}\\. `);
+                questionDisplay = quiz.question.replace(idRegex, '');
+                // input.txt 문제의 경우 문제 번호 (1-1. 등) 표시
+                questionDisplay = `${quiz.id}. ${questionDisplay}`;
+            }
+
+            label.textContent = questionDisplay;
             
             item.appendChild(checkbox);
             item.appendChild(label);
@@ -134,8 +143,7 @@ function setupSelectionScreen() {
             if (!isClosing) {
                 content.classList.add('active');
                 // 목록 높이를 계산하여 부드러운 애니메이션 적용
-                content.style.maxHeight = content.scrollHeight + 10 + "px"; 
-                // 목록이 너무 길 경우를 대비해 뷰포트 높이 제한 (CSS에서 처리)
+                content.style.maxHeight = list.scrollHeight + 40 + "px"; // padding 고려
             }
         });
     });
@@ -213,19 +221,19 @@ function startQuiz(mode) {
  * 현재 인덱스의 퀴즈를 화면에 표시합니다.
  */
 function displayQuestion() {
-    // 카드가 뒤집혀 있다면 원상태로
+    // ★★★★★ 수정된 부분: 다음 문제로 넘어가기 전 카드 플립 상태를 강제 초기화 (애니메이션 문제 해결) ★★★★★
+    // 0ms 딜레이를 주어 애니메이션 리셋을 확실하게 합니다.
+    quizCard.style.transition = 'none'; 
     quizCard.classList.remove('is-flipped');
-
+    
+    // 애니메이션 속성 복원 (다음 뒤집기 동작을 위해)
+    setTimeout(() => {
+        quizCard.style.transition = 'transform 0.6s';
+    }, 50); 
+    
     const quiz = currentQuizSet[currentQuestionIndex];
     
-    // 문제 텍스트에서 ID 제거 (기출.txt에서 이미 제거되었지만, 혹시 모를 경우를 대비)
-    let question = quiz.question;
-    const inputRegex = /^(\d+-\d+)\. /;
-    if (quiz.category !== '기출' && inputRegex.test(question)) {
-        question = question.replace(inputRegex, '');
-    }
-    
-    questionText.textContent = question;
+    questionText.textContent = quiz.question;
     answerText.textContent = quiz.answer.length > 0 ? quiz.answer : "(답변 내용이 없습니다)";
     quizCounter.textContent = `${currentQuestionIndex + 1} / ${currentQuizSet.length}`;
 }
