@@ -253,7 +253,7 @@ function displayQuestion() {
     answerText.textContent = quiz.answer.length > 0 ? quiz.answer : "(답변 내용이 없습니다)";
     quizCounter.textContent = `${currentQuestionIndex + 1} / ${currentQuizSet.length}`;
     
-    // ★★★★★ 수정된 부분: 폰트 크기 동적 조정 로직 추가 ★★★★★
+    // 3. 폰트 크기 동적 조정 로직
     
     // 폰트 크기 조정 전에 0.1초 대기 (DOM 렌더링 후 높이 계산을 정확히 하기 위해)
     setTimeout(() => {
@@ -261,16 +261,16 @@ function displayQuestion() {
         answerText.classList.remove('small-font');
         
         // 폰트가 원래 크기일 때의 높이를 측정
-        // 높이 측정 시에는 카드 뒷면(cardBack)을 기준으로 측정해야 합니다.
+        // height: 100%인 cardBack을 기준으로 측정합니다.
         const scrollHeight = answerText.scrollHeight;
         const clientHeight = cardBack.clientHeight; 
         
-        // 30px의 여유 공간을 두고 비교합니다.
+        // 30px의 여유 공간을 두고 비교합니다. 스크롤이 필요하면 폰트 작게
         if (scrollHeight > clientHeight + 30) { 
             answerText.classList.add('small-font');
         }
         
-        // 3. 애니메이션 속성 복원
+        // 4. 애니메이션 속성 복원
         setTimeout(() => {
             quizCard.style.transition = 'transform 0.6s';
         }, 50); 
