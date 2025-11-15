@@ -1,204 +1,84 @@
-/* style.css */
+/* 3. 퀴즈 풀이 화면 */
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background-color: #f4f4f4;
-  color: #333;
-}
-
-/* 화면 공통 */
-.screen {
-  display: none;
-  padding: 20px;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.screen.active {
-  display: block;
-}
-
-/* 버튼 공통 */
-button {
-  cursor: pointer;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  padding: 10px 14px;
-  margin: 4px 0;
-}
-
-.btn-main {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-main:hover {
-  background-color: #0056b3;
-}
-
-.btn-sub {
-  background-color: #ddd;
-  color: #333;
-  margin-left: 8px;
-}
-
-.btn-sub:hover {
-  background-color: #ccc;
-}
-
-/* 메뉴 버튼 */
-#start-screen {
-  text-align: center;
-}
-
-#start-screen h1 {
-  margin-bottom: 20px;
-}
-
-.btn-menu {
-  display: block;
+#quiz-header {
   width: 100%;
-  max-width: 320px;
-  margin: 8px auto;
-  background-color: #ffffff;
-  border: 1px solid #ccc;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #888;
+  margin-bottom: 10px;
 }
 
-.btn-menu:hover {
-  background-color: #f0f0f0;
-}
-
-/* 퀴즈 카드 */
+/* 카드 뒤집기 애니메이션 */
 #quiz-card-container {
-  perspective: 1000px;
-  margin: 40px auto;
-  max-width: 600px;
+  width: 100%;
+  /* 모바일에서 화면을 꽉 채우도록 높이 비율을 크게 설정 */
+  /* 상단 제목/카운터 + 아래 버튼 여유를 빼고 나머지를 카드가 다 씀 */
+  height: 65vh;          /* 기존 min-height 대신 고정 비율 사용 */
+  max-height: 65vh;
+  perspective: 1500px;   /* 3D 효과를 위한 원근감 */
 }
 
+/* 카드 자체를 컨테이너 높이에 꽉 채움 */
 #quiz-card {
   width: 100%;
-  min-height: 200px;
+  height: 100%;          /* 컨테이너 높이에 맞게 */
   position: relative;
-  transition: transform 0.6s;
   transform-style: preserve-3d;
+  transition: transform 0.6s;
+  cursor: pointer;
 }
 
-#quiz-card.is-flipped {
-  transform: rotateY(180deg);
-}
-
+/* 카드 앞·뒷면 공통 */
 .card-face {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
+  height: 100%;           /* 앞/뒤 모두 동일한 높이 강제 */
   backface-visibility: hidden;
-  border-radius: 8px;
-  background-color: #ffffff;
-  border: 1px solid #ddd;
+  background-color: var(--card-color);
+  border-radius: 15px;
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 20px;
   box-sizing: border-box;
+  overflow-y: auto;       /* 내용이 넘치면 스크롤 */
 }
 
-.card-front {
-  z-index: 2;
+/* 앞면 텍스트(문제) */
+.card-front p,
+.card-back p {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.6;
 }
 
+/* 앞면 문제는 조금 크게 */
+.card-front p {
+  font-size: 1.3rem;
+}
+
+/* 뒷면 답변은 약간 작게 */
+.card-back p {
+  font-size: 1.1rem;
+}
+
+/* 카드의 뒷면 (답변) */
 .card-back {
   transform: rotateY(180deg);
 }
 
-/* 질문/답 텍스트 */
-#question-text,
-#answer-text {
-  white-space: pre-wrap;
-  line-height: 1.5;
+/* 카드가 뒤집혔을 때 */
+#quiz-card.is-flipped {
+  transform: rotateY(180deg);
 }
 
-/* 퀴즈 헤더 */
-#quiz-header {
-  display: flex;
-  justify-content: flex-end;
-}
-
-/* 선택 화면 */
-#selection-screen h1 {
-  margin-bottom: 16px;
-}
-
-/* 상단 카테고리 버튼 */
-#selection-category-buttons {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.select-category-btn {
-  flex: 1;
-  background-color: #ffffff;
-  border: 1px solid #ccc;
-}
-
-.select-category-btn.active {
-  background-color: #007bff;
-  color: #fff;
-  border-color: #0056b3;
-}
-
-/* 카테고리 별 블록 */
-.selection-category-block {
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin-bottom: 10px;
-  background-color: #ffffff;
-  overflow: hidden;
-}
-
-/* h2 자체에 클릭 이벤트를 줄 수도 있음 */
-.selection-category-block h2 {
-  margin: 0;
-  padding: 8px 12px;
-  font-size: 17px;
-  background-color: #f9f9f9;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-}
-
-/* 안쪽 리스트 */
-.selection-list-inner {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.25s ease-out;
-  padding: 0 12px;
-}
-
-/* 펼쳐진 상태 */
-.selection-category-block.open .selection-list-inner {
-  padding: 8px 12px 10px;
-  max-height: 400px; /* 필요시 조정 */
-}
-
-/* 리스트 항목 */
-.selection-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.selection-item label {
-  flex: 1;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.selection-item input[type="checkbox"] {
-  margin-top: 3px;
-}
-
-/* 반응형 */
-@media (max-width: 600px) {
-  #selection-category-buttons {
-    flex-direction: column;
-  }
+/* 하단 버튼 영역이 카드에 너무 붙지 않게 여백 조정 */
+#quiz-screen .btn-main,
+#quiz-screen .btn-sub {
+  margin-top: 12px;
+  width: 100%;
 }
