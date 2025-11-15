@@ -90,7 +90,7 @@ const R_MAP = {
  */
 function create7thSubQuizzes(originalQuiz) {
     const lines = originalQuiz.answer.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    const itemMap = {}; // 항목별 데이터 저장 (ㄱ, ㄴ, ... ㅊ)
+    const itemMap = {}; // 항목별 데이터 저장 (ㄱ, ㄴ, ... ㅌ)
     const availableKeys = []; // 퀴즈 출제 가능한 키 목록 (ㄱ, ㄴ, ..., ㅌ)
 
     // 항목을 파싱하여 맵에 저장
@@ -100,20 +100,27 @@ function create7thSubQuizzes(originalQuiz) {
             const key = match[1].replace('.', '');
             const content = match[2].trim();
             itemMap[key] = content;
+            
+            // ㅊ 항목은 중복될 수 있도록 예외 처리
             if (key !== 'ㅊ') {
                 availableKeys.push(key);
+            } else {
+                // ㅊ 항목은 한 번만 추가 (나중에 랜덤 R값 선택)
+                if (!availableKeys.includes('ㅊ')) {
+                    availableKeys.push('ㅊ');
+                }
             }
-        } else if (line.startsWith('ㅊ.')) {
-            // ㅊ. 항목은 특별 처리 (R_MAP 사용)
-            availableKeys.push('ㅊ');
         }
     });
     
     // 5개의 퀴즈를 생성하기 위한 항목을 랜덤으로 중복 없이 선택
     const selectedKeys = new Set();
-    while (selectedKeys.size < 5 && availableKeys.length > 0) {
-        const randomIndex = Math.floor(Math.random() * availableKeys.length);
-        const randomKey = availableKeys.splice(randomIndex, 1)[0]; // 선택 후 배열에서 제거
+    // 5개를 중복 없이 뽑기 위해 availableKeys 배열의 복사본을 사용
+    const keysToDraw = [...availableKeys]; 
+
+    while (selectedKeys.size < 5 && keysToDraw.length > 0) {
+        const randomIndex = Math.floor(Math.random() * keysToDraw.length);
+        const randomKey = keysToDraw.splice(randomIndex, 1)[0]; 
         selectedKeys.add(randomKey);
     }
 
@@ -132,20 +139,32 @@ function create7thSubQuizzes(originalQuiz) {
             subId = `${originalQuiz.id}-${key}-${randomRKey.replace('R', '').replace('이상', 'p')}`;
 
         } else {
-            // 일반 항목 처리: 항목 내용 추출
+            // 일반 항목 처리: 항목 내용 추출 (조건 : 속도)
             const content = itemMap[key];
-            const contentMatch = content.match(/^(.*) :\s*(시속\s*(\d+)키로 이하입니다\.)/);
+            const contentMatch = content.match(/^(.*) :\s*(.*)/); // 모든 것을 콜론 기준으로 나눔
             
             if (contentMatch) {
                 const condition = contentMatch[1].trim();
-                const speedText = contentMatch[2].trim();
+                let speed_raw = contentMatch[2].trim();
+                let speed_num = speed_raw;
                 
-                question = `${condition}의 제한 속도는 얼마인가?`;
-                answer = speedText;
+                // 속도 텍스트가 순수 숫자(70)일 경우 "시속 XX키로 이하입니다." 형태로 변환
+                if (speed_raw.match(/^\d+$/)) {
+                    speed_num = `시속 ${speed_raw}키로 이하입니다.`;
+                }
+
+                // 질문 구성: '속도' 또는 '적용속도'로 끝나는지 확인
+                if (condition.endsWith('속도') || condition.endsWith('적용속도')) {
+                    question = `${condition}는 얼마인가?`;
+                } else {
+                    question = `${condition}의 제한 속도는 얼마인가?`;
+                }
+
+                answer = speed_num;
                 subId = `${originalQuiz.id}-${key}`;
             } else {
                  // 파싱 실패 대비 임시 처리
-                question = `(랜덤 퀴즈) ${content.substring(0, 20)} 제한 속도는?`;
+                question = `(랜덤 퀴즈 파싱 오류) ${content.substring(0, 20)} 제한 속도는?`;
                 answer = "확인 필요";
                 subId = `${originalQuiz.id}-${key}-err`;
             }
