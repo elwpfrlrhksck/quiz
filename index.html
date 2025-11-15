@@ -7,48 +7,27 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- 시작 화면 -->
+  <!-- 1. 시작 화면 -->
   <div id="start-screen" class="screen active">
-    <h1>기관차 퀴즈</h1>
-    <button class="btn-menu" data-mode="all">1. 전체 (0)</button>
-    <button class="btn-menu" data-mode="2">2. 기술 (0)</button>
-    <button class="btn-menu" data-mode="3">3. 규정 (0)</button>
-    <button class="btn-menu" data-mode="gicul">4. 기출 (0)</button>
+    <h1>퀴즈 범위 선택</h1>
+    <button class="btn-menu" data-mode="all">1. 전체 (0개)</button>
+    <button class="btn-menu" data-mode="기술">2. 기술 (0개)</button>
+    <button class="btn-menu" data-mode="규정">3. 규정 (0개)</button>
+    <!-- 새로 추가되는 기출 버튼 -->
+    <button class="btn-menu" data-mode="기출">4. 기출 (0개)</button>
+    <!-- 기존 직접 선택 버튼 (번호만 5번으로 바뀐 것처럼 보이게 텍스트만 변경) -->
     <button class="btn-menu" data-mode="select">5. 직접 선택</button>
   </div>
 
-  <!-- 선택 화면 -->
+  <!-- 2. 직접 선택 화면 -->
   <div id="selection-screen" class="screen">
-    <h1>문제 선택</h1>
-
-    <!-- 상단 카테고리 헤더 -->
-    <div id="selection-category-buttons">
-      <button class="select-category-btn" data-cat="2">기술</button>
-      <button class="select-category-btn" data-cat="3">규정</button>
-      <button class="select-category-btn" data-cat="gicul">기출</button>
-    </div>
-
-    <!-- 각 카테고리별 리스트 컨테이너 -->
-    <div id="selection-lists">
-      <div class="selection-category-block" data-cat="2">
-        <h2>기술 문제</h2>
-        <div class="selection-list-inner" data-cat="2"></div>
-      </div>
-      <div class="selection-category-block" data-cat="3">
-        <h2>규정 문제</h2>
-        <div class="selection-list-inner" data-cat="3"></div>
-      </div>
-      <div class="selection-category-block" data-cat="gicul">
-        <h2>기출 문제</h2>
-        <div class="selection-list-inner" data-cat="gicul"></div>
-      </div>
-    </div>
-
-    <button id="btn-start-custom" class="btn-main">선택한 문제로 시작 (0개)</button>
-    <button id="btn-back-to-menu-select" class="btn-sub">메뉴로 돌아가기</button>
+    <h1>문제 직접 선택</h1>
+    <div id="selection-list"></div>
+    <button id="btn-start-custom" class="btn-main">선택 완료 (0개)</button>
+    <button id="btn-back-to-menu-select" class="btn-sub">뒤로가기</button>
   </div>
 
-  <!-- 퀴즈 화면 -->
+  <!-- 3. 퀴즈 화면 -->
   <div id="quiz-screen" class="screen">
     <div id="quiz-header">
       <span id="quiz-counter">1 / 10</span>
@@ -56,17 +35,15 @@
     <div id="quiz-card-container">
       <div id="quiz-card">
         <div class="card-face card-front">
-          <p id="question-text">문제가 여기에 표시됩니다.</p>
+          <p id="question-text">문제 로딩 중...</p>
         </div>
         <div class="card-face card-back">
-          <p id="answer-text">답이 여기에 표시됩니다.</p>
+          <p id="answer-text">답변 로딩 중...</p>
         </div>
       </div>
     </div>
-    <div>
-      <button id="btn-next" class="btn-main">다음 문제</button>
-      <button id="btn-back-to-menu-quiz" class="btn-sub">메뉴로 돌아가기</button>
-    </div>
+    <button id="btn-next" class="btn-main">다음 문제</button>
+    <button id="btn-back-to-menu-quiz" class="btn-sub">메뉴로</button>
   </div>
 
   <script type="module" src="parser.js"></script>
